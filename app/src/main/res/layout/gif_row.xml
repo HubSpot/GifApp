@@ -3,12 +3,17 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:orientation="horizontal"
               android:layout_width="match_parent"
-              android:layout_height="match_parent">
+              android:layout_height="match_parent"
+              android:layout_marginTop="4dp"
+              android:layout_marginBottom="4dp"
+    >
 
     <com.android.volley.toolbox.NetworkImageView
         android:id="@+id/gif_preview"
         android:layout_width="60dp"
         android:layout_height="60dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="5dp"
         />
 
     <TextView

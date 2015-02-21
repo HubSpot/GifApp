@@ -20,6 +20,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.android.volley.toolbox.Volley;
+import com.hubspot.gifapp.api.GiphyApi;
 import com.hubspot.gifapp.api.JacksonApiRequest;
 import com.hubspot.gifapp.models.GiphyApiResponse;
 import com.hubspot.gifapp.models.GiphyGif;
@@ -27,36 +28,21 @@ import com.hubspot.gifapp.models.GiphyGif;
 
 public class MainActivity extends ActionBarActivity {
 
-  private RequestQueue requestQueue;
-  private ImageLoader imageLoader;
   private ListView mListView;
   private ArrayAdapter<GiphyGif> mGifAdapter;
+  private GiphyApi apiClient;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    apiClient = GiphyApi.getInstance(getApplicationContext()); // pass app context to API class
+
     setContentView(R.layout.activity_main);
-    requestQueue = Volley.newRequestQueue(this);
 
     mListView = (ListView) findViewById(R.id.main_gif_listview);
     mGifAdapter = new GifAdapter(this);
     mListView.setAdapter(mGifAdapter);
-
-    imageLoader = new ImageLoader(requestQueue,
-            new ImageLoader.ImageCache() {
-              private final LruCache<String, Bitmap>
-                      cache = new LruCache<String, Bitmap>(20);
-
-              @Override
-              public Bitmap getBitmap(String url) {
-                return cache.get(url);
-              }
-
-              @Override
-              public void putBitmap(String url, Bitmap bitmap) {
-                cache.put(url, bitmap);
-              }
-            });
 
     makeRequest();
   }
@@ -74,7 +60,7 @@ public class MainActivity extends ActionBarActivity {
         Log.i("error", "ugh" + error.getMessage());
       }
     });
-    requestQueue.add(request);
+    apiClient.getRequestQueue().add(request);
   }
 
   private class GifAdapter extends ArrayAdapter<GiphyGif> {
@@ -98,8 +84,9 @@ public class MainActivity extends ActionBarActivity {
       }
 
       GiphyGif thisGif = getItem(position);
-      String url = thisGif.getImages().getOriginalStill().getUrl();
-      viewHolder.gifPreview.setImageUrl(url, imageLoader);
+      String url = thisGif.getImages().getFixedWidthSmallStill().getUrl();
+      viewHolder.gifPreview.setImageUrl(url, apiClient.getImageLoader());
+      viewHolder.gifTitle.setText(thisGif.getSource());
 
       return theView;
     }

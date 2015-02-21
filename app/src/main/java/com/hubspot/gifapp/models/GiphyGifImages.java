@@ -8,6 +8,7 @@ public class GiphyGifImages {
   GiphyImageDetails original;
 
   GiphyStillImageDetails originalStill;
+  GiphyStillImageDetails fixedWidthSmallStill;
 
   public GiphyGifImages() {
   }
@@ -22,5 +23,9 @@ public class GiphyGifImages {
 
   public GiphyStillImageDetails getOriginalStill() {
     return originalStill;
+  }
+
+  public GiphyStillImageDetails getFixedWidthSmallStill() {
+    return fixedWidthSmallStill;
   }
 }
