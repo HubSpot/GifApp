@@ -1,25 +1,21 @@
 package com.hubspot.gifapp;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.support.v7.app.ActionBarActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.util.LruCache;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
-import com.android.volley.toolbox.Volley;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hubspot.gifapp.api.GiphyApi;
 import com.hubspot.gifapp.api.JacksonApiRequest;
 import com.hubspot.gifapp.models.GiphyApiResponse;
@@ -44,20 +40,40 @@ public class MainActivity extends ActionBarActivity {
     mGifAdapter = new GifAdapter(this);
     mListView.setAdapter(mGifAdapter);
 
+    mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+      @Override
+      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        showDetailActivity(mGifAdapter.getItem(position));
+      }
+    });
+
     makeRequest();
+  }
+
+  private void showDetailActivity(GiphyGif gif) {
+    try {
+      Intent intent = new Intent(this, GifDetailActivity.class);
+      String serializedGif = JacksonApiRequest.mapper.writeValueAsString(gif);
+      Log.i("json dump", serializedGif);
+      intent.putExtra("gifdetails", serializedGif);
+
+      startActivity(intent);
+    } catch (JsonProcessingException e) {
+      Log.e("error", "Could not serialize json");
+    }
   }
 
   private void makeRequest() {
     JacksonApiRequest<GiphyApiResponse> request = new JacksonApiRequest<>(GiphyApiResponse.class, "http://api.giphy.com/v1/gifs/trending?api_key=dc6zaTOxFJmzC", new Response.Listener<GiphyApiResponse>() {
       @Override
       public void onResponse(GiphyApiResponse response) {
-        Log.i("log", "info: " + response.getData());
+        Log.i("log", "here's what we got: " + response.getData());
         mGifAdapter.addAll(response.getData());
       }
     }, new Response.ErrorListener(){
       @Override
       public void onErrorResponse(VolleyError error) {
-        Log.i("error", "ugh" + error.getMessage());
+        Log.e("uh oh", error.getMessage());
       }
     });
     apiClient.getRequestQueue().add(request);
